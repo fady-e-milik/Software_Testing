@@ -1,4 +1,10 @@
 package org.group5.Pages;
 
-public class CartPage {
+import org.group5.BaseClass;
+import org.openqa.selenium.WebDriver;
+
+public class CartPage extends BaseClass {
+    public CartPage (WebDriver driver) {
+        super(driver);
+    }
 }
