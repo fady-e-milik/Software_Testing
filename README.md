@@ -6,17 +6,17 @@
 
 1. ###### **Group5 Testers (QA):**
 
-    **-** Mousab Ahmed
+    **    ** **-** Mousab Ahmed
 
-    **-** Sara Ibrahim
+    **    ** **-** Sara Ibrahim
 
-    **-** Fady Emad
+    **    ** **-** Fady Emad
 
 
 
 2. ###### **About:**
 
-&nbsp;	In this project, we decided to make an automation testing for the Open Cart Demo website by using Java as a language of scripts, Maven as a build tool, Selenium as a tool for 	controlling websites, TestNG as a project management and for designing a neat and clear environment to be used by anyone, and the Apache for test driven data (ex. Excel files).
+&nbsp;	In this project, we decided to make an automation testing for the Open Cart Demo website by using Java as a language of scripts, Maven as a build tool, Selenium as a tool for 	controlling websites, TestNG &nbsp;  as a project management and for designing a neat and clear environment to be used by anyone, and the Apache for test driven data (ex. Excel files).
 
 
 
