@@ -5,6 +5,9 @@ import org.openqa.selenium.WebDriver;
 
 public class CartPage extends BaseClass {
     public CartPage (WebDriver driver) {
-        super(driver);
+        wait(driver);
+    }
+
+    private void wait(WebDriver driver) {
     }
 }

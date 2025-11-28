@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
-<suite name="Test1">
+<suite name="Test1" parallel="tests" thread-count="1">
     <test name="User-Auth-testing">
         <classes>
 
@@ -9,7 +9,7 @@
              - - on every test case with running one only of them
              -->
 
-            <!--<class name="TestCases.TestCase1"></class>-->
+            <class name="TestRunner.TestRunner"></class>
             <!--<class name="TestCases.TestCase2"></class>
             <class name="TestCases.TestCase3"></class>
             <class name="TestCases.TestCase4"></class>

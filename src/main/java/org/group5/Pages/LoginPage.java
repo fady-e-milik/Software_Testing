@@ -1,26 +1,91 @@
 package org.group5.Pages;
 
 import org.group5.BaseClass;
-import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.FindBy;
+import org.openqa.selenium.support.PageFactory;
+import org.openqa.selenium.NoSuchElementException;
 
 public class LoginPage extends BaseClass {
+
     public LoginPage (WebDriver driver) {
-        super(driver);
+        PageFactory.initElements(driver, this);
     }
 
-    //Declaring the main elements for the login page
-    WebElement emailField = driver.findElement(By.xpath("//*[@id=\"input-email\"]"));
-    WebElement passwdField = driver.findElement(By.xpath("//*[@id=\"input-password\"]"));
-    WebElement loginBoxTitle = driver.findElement(By.xpath("//*[@id=\"form-login\"]/h2"));
-    WebElement forgotPasswdButton = driver.findElement(By.xpath("//*[@id=\"form-login\"]/div[2]/a"));
-    WebElement continueToSignupButton = driver.findElement(By.xpath("//*[@id=\"content\"]/div/div[1]/div/div/a"));
-    WebElement LoginButtonBar = driver.findElement(By.xpath("//*[@id=\"account-login\"]/ul/li[3]/a"));
-    WebElement LoginButton = driver.findElement(By.xpath("//*[@id=\"form-login\"]/div[3]/button"));
+    // --- Web Elements Declaration using @FindBy ---
 
-    //Method for login with user's data
-    public void login (){
+    @FindBy(id = "input-email")
+    private WebElement emailField;
 
+    @FindBy(id = "input-password")
+    private WebElement passwdField;
+
+    // Corrected locator for the login page title header for verification
+    @FindBy(xpath = "//h1[normalize-space()='Login']")
+    private WebElement pageTitleHeader;
+
+    @FindBy(xpath = "//a[normalize-space()='Forgotten Password']")
+    private WebElement forgotPasswdButton;
+
+    // Locator for the "Continue" button under "New Customer" (to go to registration)
+    @FindBy(xpath = "//a[normalize-space()='Continue']")
+    private WebElement continueToSignupButton;
+
+    @FindBy(xpath = "//button[normalize-space()='Login']")
+    private WebElement loginButton;
+
+    // Element to verify successful login (e.g., presence of "My Account" header)
+    @FindBy(xpath = "//h2[normalize-space()='My Account']")
+    private WebElement myAccountHeader;
+
+    // Element for capturing login error message (e.g., invalid credentials)
+    @FindBy(css = ".alert.alert-danger")
+    private WebElement loginErrorAlert;
+
+
+    // --- Action Methods ---
+
+    public void enterCredentials(String email, String password) {
+        emailField.sendKeys(email);
+        passwdField.sendKeys(password);
+    }
+
+    public void clickLoginButton() {
+        loginButton.click();
+    }
+
+    public void clickForgotPasswdButton() {
+        forgotPasswdButton.click();
+    }
+
+    public void clickContinueToSignupButton() {
+        continueToSignupButton.click();
+    }
+
+    // --- Verification Methods ---
+
+    public boolean isLoginPageDisplayed() {
+        try {
+            return pageTitleHeader.isDisplayed();
+        } catch (NoSuchElementException e) {
+            return false;
+        }
+    }
+
+    public boolean isLoginSuccessful() {
+        try {
+            return myAccountHeader.isDisplayed();
+        } catch (NoSuchElementException e) {
+            return false;
+        }
+    }
+
+    public boolean isLoginErrorDisplayed() {
+        try {
+            return loginErrorAlert.isDisplayed();
+        } catch (NoSuchElementException e) {
+            return false;
+        }
     }
 }
