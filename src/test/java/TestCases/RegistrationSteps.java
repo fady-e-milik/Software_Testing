@@ -115,4 +115,36 @@ public class RegistrationSteps {
         Assert.assertTrue(currentUrl.contains("route=account/register"),
                 "Failure: Expected to stay on registration page (due to errors), but navigated away.");
     }
+
+    @When("I register with auto-generated details")
+    public void i_register_with_auto_generated_details() {
+        // Generate random email and password for registration
+        String generatedEmail = "autouser+" + System.currentTimeMillis() + "@example.com";
+        String generatedPassword = "Password123";
+
+        // Reuse existing navigation step
+        i_am_on_the_opencart_registration_page();
+
+        registrationPage.enterFirstName("Auto");
+        registrationPage.enterLastName("User");
+        registrationPage.enterEmail(generatedEmail);
+        registrationPage.enterTelephone("1234567890");
+        registrationPage.enterPassword(generatedPassword);
+        registrationPage.enterConfirmPassword(generatedPassword);
+        registrationPage.checkPrivacyPolicy();
+        registrationPage.clickContinue();
+
+        // Verify creation
+        my_account_should_be_successfully_created();
+
+        // Store for later use in the scenario
+        TestContext.setEmail(generatedEmail);
+        TestContext.setPassword(generatedPassword);
+    }
+
+    @Given("I register a new unique user")
+    public void i_register_a_new_unique_user() {
+        // Delegate to the existing auto-generated registration step to avoid duplication
+        i_register_with_auto_generated_details();
+    }
 }

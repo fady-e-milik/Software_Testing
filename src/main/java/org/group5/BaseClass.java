@@ -9,7 +9,6 @@ import org.openqa.selenium.edge.EdgeDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.JavascriptExecutor;
-import org.openqa.selenium.chromium.ChromiumDriver;
 import io.github.bonigarcia.wdm.WebDriverManager;
 import java.time.Duration;
 import java.util.Map;
@@ -24,11 +23,21 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import org.openqa.selenium.logging.LogEntries;
 import org.openqa.selenium.logging.LogEntry;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.NoSuchElementException;
+import org.openqa.selenium.StaleElementReferenceException;
+import org.openqa.selenium.ElementNotInteractableException;
+import org.openqa.selenium.WebDriverException;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.FluentWait;
+import org.openqa.selenium.support.ui.Wait;
+import java.util.List;
 
 public class BaseClass {
 
     private static final ThreadLocal<WebDriver> driver = new ThreadLocal<>();
-    private static final String BASE_URL = "https://demo.opencart.com/";
+    // Use site root so test code can append 'index.php?route=...'
+    private static final String BASE_URL = "http://localhost/opencart/upload/";
     private static final String STEALTH_USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
 
     private static ChromeOptions getStealthChromeOptions() {
@@ -62,9 +71,7 @@ public class BaseClass {
             } catch (Exception e) {
                 System.err.println("WebDriverManager failed to download EdgeDriver. Check network and local setup.");
             }
-            EdgeDriver edge = new EdgeDriver();
-            applyAdvancedStealth(edge);
-            d = edge;
+            d = new EdgeDriver();
 
         } else {
             System.err.println("Invalid browser type specified. Defaulting to Chrome with stealth options.");
@@ -82,8 +89,6 @@ public class BaseClass {
             throw new RuntimeException("Failed to initialize WebDriver.");
         }
 
-        System.err.println("Initialized WebDriver implementation: " + d.getClass().getName());
-
         // Remove late injection; CDP script is already added. Keep this as a fallback only.
         try {
             String fallback = "try{Object.defineProperty(navigator, 'webdriver', {get: () => undefined});}catch(e){}";
@@ -99,36 +104,15 @@ public class BaseClass {
         return d;
     }
 
-    // Updated: accept any WebDriver but only run CDP for ChromiumDriver instances
-    public static void applyAdvancedStealth(WebDriver wd) {
-        if (wd == null) return;
-        if (!(wd instanceof ChromiumDriver)) {
-            // not a Chromium-based driver; nothing to do
-            return;
-        }
-        ChromiumDriver chromeDriver = (ChromiumDriver) wd;
-
-        String stealthScript = "(function(){"
+    public static void applyAdvancedStealth(ChromeDriver chromeDriver) {
+        // 1) Add a script that runs on every new document before any page scripts
+        String stealthScript = ""
+                + "(function(){"
                 + "try{"
-                + "  // Basic webdriver and language spoofing\\n"
                 + "  Object.defineProperty(navigator, 'webdriver', {get: () => undefined});"
                 + "  Object.defineProperty(navigator, 'languages', {get: () => ['en-US','en']});"
                 + "  Object.defineProperty(navigator, 'plugins', {get: () => [1,2,3,4]});"
-                + "  // Additional small fingerprints\\n"
-                + "  Object.defineProperty(navigator, 'hardwareConcurrency', {get: () => 8});"
-                + "  try{ Object.defineProperty(navigator, 'deviceMemory', {get: () => 8}); }catch(e){}"
-                + "  try{ Object.defineProperty(navigator, 'platform', {get: () => 'Win32'}); }catch(e){}"
-                + "  // Provide a minimal window.chrome object to mimic real Chrome\\n"
-                + "  try{ window.chrome = window.chrome || { runtime: {}, webstore: {} }; }catch(e){}"
-                + "  // Spoof userAgentData (modern browsers)\\n"
-                + "  try{"
-                + "    if(!navigator.userAgentData) {"
-                + "      Object.defineProperty(navigator, 'userAgentData', {get: () => ({brands:[{brand:'Chromium',version:'120'},{brand:'Google Chrome',version:'120'}], mobile: false, getHighEntropyValues: (hints) => Promise.resolve({ architecture: 'x86', model: '', platform: 'Windows', platformVersion: '10.0.0', uaFullVersion: '120.0.0.0' }) })});"
-                + "    } else {"
-                + "      try{ navigator.userAgentData.brands = [{brand:'Chromium',version:'120'},{brand:'Google Chrome',version:'120'}]; }catch(e){}"
-                + "    }"
-                + "  }catch(e){}"
-                + "  // Spoof WebGL vendor/renderer\\n"
+                + "  // Spoof WebGL vendor/renderer"
                 + "  try{"
                 + "    const getParameter = WebGLRenderingContext.prototype.getParameter;"
                 + "    WebGLRenderingContext.prototype.getParameter = function(param) {"
@@ -137,38 +121,19 @@ public class BaseClass {
                 + "      return getParameter.call(this, param);"
                 + "    };"
                 + "  }catch(e){}"
-                + "  // Permissions query fallback\\n"
-                + "  try{"
-                + "    const origQuery = navigator.permissions.query;"
-                + "    navigator.permissions.query = function(query) {"
-                + "      if(query && query.name === 'notifications') { return Promise.resolve({state: Notification.permission}); }"
-                + "      return origQuery(query);"
-                + "    };"
-                + "  }catch(e){}"
                 + "}catch(e){}"
                 + "})();";
 
         // Inject the script to run before any page scripts
-        try {
-            chromeDriver.executeCdpCommand("Page.addScriptToEvaluateOnNewDocument", Map.of("source", stealthScript));
-        } catch (Exception e) {
-            System.err.println("CDP 'Page.addScriptToEvaluateOnNewDocument' failed: " + e.getMessage());
-        }
+        chromeDriver.executeCdpCommand("Page.addScriptToEvaluateOnNewDocument", Map.of("source", stealthScript));
 
         // 2) Set a realistic user agent via CDP
-        try {
-            chromeDriver.executeCdpCommand("Network.setUserAgentOverride", Map.of("userAgent", STEALTH_USER_AGENT));
-        } catch (Exception e) {
-            System.err.println("CDP 'Network.setUserAgentOverride' failed: " + e.getMessage());
-        }
+        chromeDriver.executeCdpCommand("Network.setUserAgentOverride", Map.of("userAgent", STEALTH_USER_AGENT));
 
         // 3) Set locale
-        try {
-            chromeDriver.executeCdpCommand("Emulation.setLocaleOverride", Map.of("locale", "en-US"));
-        } catch (Exception e) {
-            System.err.println("CDP 'Emulation.setLocaleOverride' failed: " + e.getMessage());
-        }
+        chromeDriver.executeCdpCommand("Emulation.setLocaleOverride", Map.of("locale", "en-US"));
 
+        // Note: more advanced CDP calls (geolocation, permissions) can be added as needed.
     }
 
     public static WebDriver getDriver() {
@@ -177,6 +142,74 @@ public class BaseClass {
             throw new IllegalStateException("WebDriver is not initialized. Call initializeDriver() first.");
         }
         return d;
+    }
+
+    // Smart wait defaults
+    private static final Duration DEFAULT_WAIT = Duration.ofSeconds(15);
+    private static final Duration DEFAULT_POLL = Duration.ofMillis(500);
+
+    /**
+     * Wait for a single element by locator. Uses a FluentWait that ignores common transient exceptions.
+     * @param d driver to use
+     * @param locator By locator
+     * @param timeout how long to wait
+     * @param polling polling interval
+     * @param requireVisible if true waits for visibility, otherwise presence
+     * @return the found WebElement
+     */
+    public static WebElement waitForElement(WebDriver d, By locator, Duration timeout, Duration polling, boolean requireVisible) {
+        if (d == null) throw new IllegalArgumentException("WebDriver must not be null");
+        Wait<WebDriver> wait = new FluentWait<>(d)
+                .withTimeout(timeout)
+                .pollingEvery(polling)
+                .ignoring(NoSuchElementException.class)
+                .ignoring(StaleElementReferenceException.class)
+                .ignoring(ElementNotInteractableException.class)
+                .ignoring(WebDriverException.class);
+        if (requireVisible) {
+            return wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
+        } else {
+            return wait.until(ExpectedConditions.presenceOfElementLocated(locator));
+        }
+    }
+
+    public static List<WebElement> waitForElements(WebDriver d, By locator, Duration timeout, Duration polling) {
+        if (d == null) throw new IllegalArgumentException("WebDriver must not be null");
+        Wait<WebDriver> wait = new FluentWait<>(d)
+                .withTimeout(timeout)
+                .pollingEvery(polling)
+                .ignoring(NoSuchElementException.class)
+                .ignoring(StaleElementReferenceException.class)
+                .ignoring(WebDriverException.class);
+        return wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(locator));
+    }
+
+    public static WebElement waitForClickable(WebDriver d, By locator, Duration timeout, Duration polling) {
+        if (d == null) throw new IllegalArgumentException("WebDriver must not be null");
+        Wait<WebDriver> wait = new FluentWait<>(d)
+                .withTimeout(timeout)
+                .pollingEvery(polling)
+                .ignoring(NoSuchElementException.class)
+                .ignoring(StaleElementReferenceException.class)
+                .ignoring(WebDriverException.class);
+        return wait.until(ExpectedConditions.elementToBeClickable(locator));
+    }
+
+    // Convenience overloads using the thread-local driver and sensible defaults
+    public static WebElement waitForElement(By locator) {
+        return waitForElement(getDriver(), locator, DEFAULT_WAIT, DEFAULT_POLL, true);
+    }
+
+    public static WebElement waitForElement(By locator, Duration timeout) {
+        return waitForElement(getDriver(), locator, timeout, DEFAULT_POLL, true);
+    }
+
+    public static List<WebElement> waitForElements(By locator) {
+        return waitForElements(getDriver(), locator, DEFAULT_WAIT, DEFAULT_POLL);
+    }
+
+    public static WebElement waitForClickable(By locator) {
+        return waitForClickable(getDriver(), locator, DEFAULT_WAIT, DEFAULT_POLL);
     }
 
     public static void waitForSiteToLoad(WebDriver driver, Duration timeout) {
@@ -221,33 +254,6 @@ public class BaseClass {
             } catch (Exception ex) {
                 System.err.println("Failed to save debug artifacts: " + ex.getMessage());
             }
-
-            // If interstitial looks like Cloudflare / verification and manualSolve is enabled, pause and let user solve
-            try {
-                boolean looksLikeCF = false;
-                try {
-                    String t = driver.getTitle();
-                    if (t != null && t.toLowerCase().contains("just a moment")) looksLikeCF = true;
-                    String page = driver.getPageSource();
-                    if (!looksLikeCF && page != null && page.toLowerCase().contains("verifying you are human")) looksLikeCF = true;
-                } catch (Exception ignore) {
-                }
-
-                boolean manual = Boolean.parseBoolean(System.getProperty("manualSolve", "false"));
-                if (looksLikeCF && manual) {
-                    System.err.println("Cloudflare-like interstitial detected. Saved artifacts to target/debug-artifacts.");
-                    System.err.println("Please solve the interstitial manually in the opened browser, then press ENTER here to continue the test.");
-                    try {
-                        // Wait for user input on the console
-                        byte[] buffer = new byte[1024];
-                        System.in.read(buffer);
-                    } catch (Exception ie) {
-                        // ignore
-                    }
-                }
-            } catch (Exception ex) {
-                // ignore
-            }
         }
     }
 
@@ -281,7 +287,7 @@ public class BaseClass {
                     Files.writeString(html, page);
                     System.err.println("Saved page HTML to: " + html.toAbsolutePath());
                 } else {
-                    System.err.println("Page source was null, skipping HTML save.");
+                    System.err.println("Page source was null; skipping HTML save.");
                 }
             } catch (Exception e) {
                 System.err.println("Saving page HTML failed: " + e.getMessage());
@@ -304,31 +310,8 @@ public class BaseClass {
                 System.err.println("Could not collect console logs: " + e.getMessage());
             }
 
-            // navigator properties
-            try {
-                captureNavigatorProperties(driver, outDir, baseName);
-            } catch (Exception e) {
-                System.err.println("Failed to capture navigator properties: " + e.getMessage());
-            }
-
         } catch (IOException ioe) {
             System.err.println("Could not create debug-artifacts directory: " + ioe.getMessage());
-        }
-    }
-
-    // helper to capture navigator properties via JS and save to a JSON-like file
-    private static void captureNavigatorProperties(WebDriver driver, Path outDir, String baseName) {
-        if (driver == null || !(driver instanceof JavascriptExecutor)) return;
-        try {
-            JavascriptExecutor js = (JavascriptExecutor) driver;
-            Object res = js.executeScript(
-                    "return {webdriver: navigator.webdriver, userAgent: navigator.userAgent, platform: navigator.platform, languages: navigator.languages, plugins: navigator.plugins ? navigator.plugins.length : 0, hardwareConcurrency: navigator.hardwareConcurrency, deviceMemory: navigator.deviceMemory};"
-            );
-            Path navFile = outDir.resolve(baseName + ".nav.json");
-            Files.writeString(navFile, String.valueOf(res));
-            System.err.println("Saved navigator properties to: " + navFile.toAbsolutePath());
-        } catch (Exception e) {
-            System.err.println("Could not capture navigator properties: " + e.getMessage());
         }
     }
 

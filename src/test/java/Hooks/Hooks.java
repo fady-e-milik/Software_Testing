@@ -1,41 +1,60 @@
-// src/test/java/Hooks/Hooks.java
 package Hooks;
 
 import io.cucumber.java.After;
 import io.cucumber.java.Before;
+import io.cucumber.java.Scenario;
 import org.group5.BaseClass;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.support.ui.WebDriverWait;
+
 import java.time.Duration;
+
 
 public class Hooks {
 
-    @Before(order = 0)
+    // NOTE: This simple setup requires you to use the DriverFactory.getDriver()
+    // in your Step Definition classes to retrieve the initialized driver.
+
+    /**
+     * Runs before every scenario. Initializes the driver.
+     */
+    @Before(order = 0) // Order ensures this runs first
     public void setup() {
+        // Initialize browser. Reads browser from system property 'browser' when provided.
+        // Example: -Dbrowser=chrome or -Dbrowser=edge
         String browser = System.getProperty("browser", "chrome");
-        BaseClass.initializeDriver(browser);        // شغالة دلوقتي
+        BaseClass.initializeDriver(browser);
     }
 
-    @Before(order = 1)
-    public void openHomePage() {
-        WebDriver driver = BaseClass.getDriver();
-        driver.get("https://demo.opencart.com/");
-
-        // ده كل اللي محتاجه عشان يعدي Cloudflare في 2025
-        new WebDriverWait(driver, Duration.ofSeconds(40))
-                .until(d -> {
-                    String title = d.getTitle();
-                    String url = d.getCurrentUrl();
-                    return !title.toLowerCase().contains("just a moment")
-                            && !url.contains("challenges.cloudflare.com")
-                            && d.getPageSource().contains("Your Store");
-                });
-
-        System.out.println("تم فتح OpenCart بنجاح بدون Cloudflare!");
-    }
-
-    @After
+    /**
+     * Runs after every scenario. Quits the driver.
+     */
+    @After(order = 0) // Order ensures this runs last
     public void tearDown() {
         BaseClass.quitDriver();
+    }
+
+    /**
+     * Runs after every scenario. If the scenario failed, save debug artifacts.
+     */
+    @After(order = 1) // Order ensures this runs after the default tearDown
+    public void tearDown(Scenario scenario) {
+        try {
+            if (scenario != null && scenario.isFailed()) {
+                // save screenshot, HTML, console logs to target/debug-artifacts
+                String safeName = scenario.getName().replaceAll("[^a-zA-Z0-9-_]", "_");
+                BaseClass.saveDebugArtifacts(BaseClass.getDriver(), "scenarioFailure_" + safeName);
+            }
+        } catch (Exception ignored) {
+        } finally {
+            BaseClass.quitDriver();
+        }
+    }
+
+    // Optional: Add a hook to navigate to the base URL
+    @Before("@Home or @Registration or @Login")
+    public void navigateToHomePage() {
+        BaseClass.getDriver().get(BaseClass.getBaseUrl());
+        // Wait for initial site load (handles Cloudflare/JS interstitials)
+        BaseClass.waitForSiteToLoad(BaseClass.getDriver(), Duration.ofSeconds(30));
+
     }
 }

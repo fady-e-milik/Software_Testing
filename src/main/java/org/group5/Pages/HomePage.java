@@ -16,28 +16,28 @@ public class HomePage extends BaseClass {
     // --- Web Elements Declaration ---
 
     // Top Navigation Links (Links usually found in the header)
-    @FindBy(xpath = "//span[normalize-space()='My Account']")
+    @FindBy(xpath = "//*[@id=\"top\"]/div/div/div[2]/ul/li[2]/div/a")
     private WebElement myAccountMenu;
 
-    @FindBy(linkText = "Register")
+    @FindBy(xpath = "//*[@id=\"top\"]/div/div/div[2]/ul/li[2]/div/ul/li[1]/a")
     private WebElement registerLink;
 
-    @FindBy(linkText = "Login")
+    @FindBy(xpath = "//*[@id=\"top\"]/div/div/div[2]/ul/li[2]/div/ul/li[2]/a")
     private WebElement loginLink;
 
     // Search Bar
     @FindBy(name = "search")
     private WebElement searchInput;
 
-    @FindBy(xpath = "//button[@class='btn btn-default btn-lg']")
+    @FindBy(xpath = "//*[@id=\"container\"]/header/div/div/div[2]/form/button")
     private WebElement searchButton;
 
     // Unique element to confirm page presence (e.g., the main banner/slider)
-    @FindBy(id = "slideshow0")
+    @FindBy(xpath = "//*[@id=\"carousel-banner-0\"]/div[2]/div[1]")
     private WebElement mainSliderBanner;
 
     // Example Featured Product Element (first product link)
-    @FindBy(xpath = "//div[@class='product-layout']//h4/a")
+    @FindBy(xpath = "//*[@id=\"content\"]/div[2]/div[1]/div/div[2]/div/h4/a")
     private WebElement firstFeaturedProductLink;
 
 

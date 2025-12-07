@@ -46,6 +46,16 @@ public class LoginSteps {
         loginPage.enterCredentials(email, password);
     }
 
+    @When("I enter the registered credentials")
+    public void i_enter_the_registered_credentials() {
+        String email = TestContext.getEmail();
+        String password = TestContext.getPassword();
+        if (email == null || password == null) {
+            throw new RuntimeException("No registered credentials found in TestContext. Ensure registration step ran.");
+        }
+        loginPage.enterCredentials(email, password);
+    }
+
     @When("I enter invalid credentials with email {string} and password {string}")
     public void i_enter_invalid_credentials_with_email_and_password(String email, String password) {
         loginPage.enterCredentials(email, password);

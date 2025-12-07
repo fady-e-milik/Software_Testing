@@ -1,90 +1,72 @@
 package org.group5.Pages;
 
 import org.group5.BaseClass;
+import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.support.FindBy;
-import org.openqa.selenium.support.PageFactory;
-import org.openqa.selenium.NoSuchElementException;
 
 public class LoginPage extends BaseClass {
 
-    public LoginPage (WebDriver driver) {
-        PageFactory.initElements(driver, this);
+    private final WebDriver driver;
+
+    // Locators
+    private final By emailField = By.id("input-email");
+    private final By passwdField = By.id("input-password");
+    private final By forgotPasswdButton = By.xpath("//a[normalize-space()='Forgotten Password']");
+    private final By continueToSignupButton = By.xpath("//a[normalize-space()='Continue']");
+    private final By loginButton = By.xpath("//button[normalize-space()='Login']");
+    private final By myAccountHeader = By.xpath("//h2[normalize-space()='My Account']");
+    private final By loginErrorAlert = By.cssSelector(".alert.alert-danger");
+
+    public LoginPage(WebDriver driver) {
+        this.driver = driver;
     }
-
-    // --- Web Elements Declaration using @FindBy ---
-
-    @FindBy(id = "input-email")
-    private WebElement emailField;
-
-    @FindBy(id = "input-password")
-    private WebElement passwdField;
-
-    // Corrected locator for the login page title header for verification
-    @FindBy(xpath = "//h1[normalize-space()='Login']")
-    private WebElement pageTitleHeader;
-
-    @FindBy(xpath = "//a[normalize-space()='Forgotten Password']")
-    private WebElement forgotPasswdButton;
-
-    // Locator for the "Continue" button under "New Customer" (to go to registration)
-    @FindBy(xpath = "//a[normalize-space()='Continue']")
-    private WebElement continueToSignupButton;
-
-    @FindBy(xpath = "//button[normalize-space()='Login']")
-    private WebElement loginButton;
-
-    // Element to verify successful login (e.g., presence of "My Account" header)
-    @FindBy(xpath = "//h2[normalize-space()='My Account']")
-    private WebElement myAccountHeader;
-
-    // Element for capturing login error message (e.g., invalid credentials)
-    @FindBy(css = ".alert.alert-danger")
-    private WebElement loginErrorAlert;
-
 
     // --- Action Methods ---
 
     public void enterCredentials(String email, String password) {
-        emailField.sendKeys(email);
-        passwdField.sendKeys(password);
+        BaseClass.waitForElement(emailField).clear();
+        BaseClass.waitForElement(emailField).sendKeys(email);
+        BaseClass.waitForElement(passwdField).sendKeys(password);
     }
 
     public void clickLoginButton() {
-        loginButton.click();
+        BaseClass.waitForClickable(loginButton).click();
     }
 
     public void clickForgotPasswdButton() {
-        forgotPasswdButton.click();
+        BaseClass.waitForClickable(forgotPasswdButton).click();
     }
 
     public void clickContinueToSignupButton() {
-        continueToSignupButton.click();
+        BaseClass.waitForClickable(continueToSignupButton).click();
     }
 
     // --- Verification Methods ---
 
     public boolean isLoginPageDisplayed() {
         try {
-            return pageTitleHeader.isDisplayed();
-        } catch (NoSuchElementException e) {
+            // Consider the login page displayed if the email and password inputs are present
+            WebElement e1 = BaseClass.waitForElement(emailField, java.time.Duration.ofSeconds(5));
+            WebElement e2 = BaseClass.waitForElement(passwdField, java.time.Duration.ofSeconds(5));
+            return e1 != null && e2 != null;
+        } catch (Exception ex) {
             return false;
         }
     }
 
     public boolean isLoginSuccessful() {
         try {
-            return myAccountHeader.isDisplayed();
-        } catch (NoSuchElementException e) {
+            return BaseClass.waitForElement(myAccountHeader, java.time.Duration.ofSeconds(5)) != null;
+        } catch (Exception ex) {
             return false;
         }
     }
 
     public boolean isLoginErrorDisplayed() {
         try {
-            return loginErrorAlert.isDisplayed();
-        } catch (NoSuchElementException e) {
+            return BaseClass.waitForElement(loginErrorAlert, java.time.Duration.ofSeconds(3)) != null;
+        } catch (Exception ex) {
             return false;
         }
     }

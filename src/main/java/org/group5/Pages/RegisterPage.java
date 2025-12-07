@@ -1,16 +1,11 @@
 package org.group5.Pages;
 
 import org.openqa.selenium.By;
-import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.support.ui.ExpectedConditions;
-import org.openqa.selenium.support.ui.WebDriverWait;
-import java.time.Duration;
+import org.group5.BaseClass;
 
 public class RegisterPage {
-    // Instance variables to hold the browser reference and the explicit wait utility.
-    private final WebDriver driver; // Made final as best practice, the reference should not change.
-    private final WebDriverWait wait; // Made final.
+    // No per-page WebDriver field required — we use BaseClass helper methods
 
     // Locators
     private final By firstNameField = By.id("input-firstname");
@@ -18,42 +13,53 @@ public class RegisterPage {
     private final By emailField = By.id("input-email");
     private final By passwordField = By.id("input-password");
     private final By privacyPolicyCheckbox = By.name("agree");
+    private final By telephoneField = By.id("input-telephone");
+    private final By confirmPasswordField = By.id("input-confirm");
     private final By continueButton = By.cssSelector("input[value='Continue']");
-    private final By successHeader = By.xpath("//div[@id='content']/h1"); // H1 on the success page
+    private final By successHeader = By.xpath("//*[@id=\"content\"]/h1"); // H1 on the success page
 
-    public RegisterPage(WebDriver driver) {
+    private final org.openqa.selenium.WebDriver driver;
+
+    public RegisterPage(org.openqa.selenium.WebDriver driver) {
+        // Store the driver for potential per-page direct interactions
         this.driver = driver;
-        // Initialize explicit wait for 10 seconds
-        this.wait = new WebDriverWait(driver, Duration.ofSeconds(10));
     }
 
     public void enterFirstName(String firstName) {
-        driver.findElement(firstNameField).sendKeys(firstName);
+        BaseClass.waitForElement(firstNameField).sendKeys(firstName);
     }
 
     public void enterLastName(String lastName) {
-        driver.findElement(lastNameField).sendKeys(lastName);
+        BaseClass.waitForElement(lastNameField).sendKeys(lastName);
     }
 
     public void enterEmail(String email) {
-        driver.findElement(emailField).sendKeys(email);
+        BaseClass.waitForElement(emailField).sendKeys(email);
     }
 
     public void enterPassword(String password) {
-        driver.findElement(passwordField).sendKeys(password);
+        BaseClass.waitForElement(passwordField).sendKeys(password);
+    }
+
+    public void enterTelephone(String telephone) {
+        BaseClass.waitForElement(telephoneField).sendKeys(telephone);
+    }
+
+    public void enterConfirmPassword(String confirmPassword) {
+        BaseClass.waitForElement(confirmPasswordField).sendKeys(confirmPassword);
     }
 
     public void checkPrivacyPolicy() {
         // Use WebDriverWait to ensure the element is clickable before clicking
-        wait.until(ExpectedConditions.elementToBeClickable(privacyPolicyCheckbox)).click();
+        BaseClass.waitForClickable(privacyPolicyCheckbox).click();
     }
 
     public void clickContinue() {
-        wait.until(ExpectedConditions.elementToBeClickable(continueButton)).click();
+        BaseClass.waitForClickable(continueButton).click();
     }
 
     public String verifySuccessMessage() {
-        WebElement successElement = wait.until(ExpectedConditions.visibilityOfElementLocated(successHeader));
+        WebElement successElement = BaseClass.waitForElement(successHeader);
         return successElement.getText();
     }
 }
