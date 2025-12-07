@@ -16,9 +16,7 @@ public class RegisterPage {
     private final By firstNameField = By.id("input-firstname");
     private final By lastNameField = By.id("input-lastname");
     private final By emailField = By.id("input-email");
-    private final By telephoneField = By.id("input-telephone");
     private final By passwordField = By.id("input-password");
-    private final By confirmPasswordField = By.id("input-confirm");
     private final By privacyPolicyCheckbox = By.name("agree");
     private final By continueButton = By.cssSelector("input[value='Continue']");
     private final By successHeader = By.xpath("//div[@id='content']/h1"); // H1 on the success page

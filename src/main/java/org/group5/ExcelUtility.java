@@ -6,14 +6,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 
 public class ExcelUtility {
-
-    /**
-     * Reads data from an Excel sheet and converts it into a 2D Object array for TestNG.
-     * @param excelFilePath The path to the XLSX file.
-     * @param sheetName The name of the sheet to read.
-     * @return Object[][] containing the data rows (excluding header).
-     */
     public static Object[][] getTestData(String excelFilePath, String sheetName) {
+
         Object[][] data = null;
         try (FileInputStream fis = new FileInputStream(excelFilePath);
              Workbook workbook = new XSSFWorkbook(fis)) {
@@ -31,7 +25,7 @@ public class ExcelUtility {
             int colCount = headerRow != null ? headerRow.getLastCellNum() : 0;
             if (colCount == 0) return new Object[0][0];
 
-            // Initialize array (Rows = total rows - header row)
+            // Initialize an array (Rows = total rows - header row)
             data = new Object[rowCount][colCount];
 
             // Iterate over data rows (starting from row index 1)

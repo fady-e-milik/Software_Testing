@@ -1,47 +1,41 @@
+// src/test/java/Hooks/Hooks.java
 package Hooks;
 
 import io.cucumber.java.After;
 import io.cucumber.java.Before;
 import org.group5.BaseClass;
-import java.time.Duration;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.support.ui.WebDriverWait;
+import java.time.Duration;
 
-/**
- * Cucumber Hooks class to manage the WebDriver lifecycle.
- * Assumes a Dependency Injection framework (like PicoContainer) is used
- * to share the WebDriver instance across steps.
- */
 public class Hooks {
 
-    private static WebDriver driver;
-
-    // NOTE: This simple setup requires you to use the DriverFactory.getDriver()
-    // in your Step Definition classes to retrieve the initialized driver.
-
-    /**
-     * Runs before every scenario. Initializes the driver.
-     */
-    @Before(order = 0) // Order ensures this runs first
+    @Before(order = 0)
     public void setup() {
-        // Initialize browser. Reads browser from system property 'browser' when provided.
-        // Example: -Dbrowser=chrome or -Dbrowser=edge
-        String browser = System.getProperty("browser", "edge");
-        driver = BaseClass.initializeDriver(browser);
+        String browser = System.getProperty("browser", "chrome");
+        BaseClass.initializeDriver(browser);        // شغالة دلوقتي
     }
 
-    /**
-     * Runs after every scenario. Quits the driver.
-     */
-    @After(order = 0) // Order ensures this runs last
+    @Before(order = 1)
+    public void openHomePage() {
+        WebDriver driver = BaseClass.getDriver();
+        driver.get("https://demo.opencart.com/");
+
+        // ده كل اللي محتاجه عشان يعدي Cloudflare في 2025
+        new WebDriverWait(driver, Duration.ofSeconds(40))
+                .until(d -> {
+                    String title = d.getTitle();
+                    String url = d.getCurrentUrl();
+                    return !title.toLowerCase().contains("just a moment")
+                            && !url.contains("challenges.cloudflare.com")
+                            && d.getPageSource().contains("Your Store");
+                });
+
+        System.out.println("تم فتح OpenCart بنجاح بدون Cloudflare!");
+    }
+
+    @After
     public void tearDown() {
         BaseClass.quitDriver();
-    }
-
-    // Optional: Add a hook to navigate to the base URL
-    @Before("@Home or @Registration or @Login")
-    public void navigateToHomePage() {
-        BaseClass.getDriver().get(BaseClass.getBaseUrl());
-        // Wait for initial site load (handles Cloudflare/JS interstitials)
-        BaseClass.waitForSiteToLoad(BaseClass.getDriver(), Duration.ofSeconds(30));
     }
 }

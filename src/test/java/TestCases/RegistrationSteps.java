@@ -12,13 +12,7 @@ import org.testng.Assert;
 
 import org.group5.Pages.RegisterPage;
 
-import java.time.Duration;
 
-/**
- * Step Definitions for the User Registration feature.
- * This class links the Gherkin steps in the feature file to the methods
- * in the RegistrationPage (Page Object Model).
- */
 public class RegistrationSteps {
 
     // Using BaseClass to retrieve the shared WebDriver instance initialized in Hooks
@@ -26,7 +20,7 @@ public class RegistrationSteps {
     private RegisterPage registrationPage;
 
     public RegistrationSteps() {
-        // We avoid initializing driver here — Cucumber constructs Step instances before Hooks run.
+        // We avoid initializing a driver here — Cucumber constructs Step instances before Hooks run.
     }
 
     @Before(order = 1)

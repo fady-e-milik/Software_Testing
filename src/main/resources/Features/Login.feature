@@ -6,7 +6,6 @@ Feature: User Login
 
   @Login @Smoke
   Scenario Outline: Successful User Login with valid credentials
-# This scenario uses the LoginSteps method: i_enter_valid_credentials_with_email_and_password
     Given I am on the OpenCart login page
     When I enter valid credentials with email "<Email>" and password "<Password>"
     And I click the Login button
@@ -20,7 +19,6 @@ Feature: User Login
 
   @Login @Negative
   Scenario Outline: Failed User Login with invalid credentials
-# This scenario uses the LoginSteps method: i_enter_invalid_credentials_with_email_and_password
     Given I am on the OpenCart login page
     When I enter invalid credentials with email "<Email>" and password "<Password>"
     And I click the Login button

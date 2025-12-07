@@ -4,16 +4,8 @@
     <test name="User-Auth-testing">
         <classes>
 
-            <!-- Note that if I ran all of these test cases, some will fail because there are test cases that are rely on
-             - - the same account that has been deleted from the previous test case, so we must create that account manually
-             - - on every test case with running one only of them
-             -->
-
             <class name="TestRunner.TestRunner"></class>
-            <!--<class name="TestCases.TestCase2"></class>
-            <class name="TestCases.TestCase3"></class>
-            <class name="TestCases.TestCase4"></class>
-            <class name="TestCases.TestCase5"></class>-->
+
         </classes>
     </test>
 </suite>
