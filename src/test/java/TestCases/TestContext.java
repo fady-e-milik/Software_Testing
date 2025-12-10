@@ -6,10 +6,39 @@ package TestCases;
 public class TestContext {
     private static final ThreadLocal<String> email = new ThreadLocal<>();
     private static final ThreadLocal<String> password = new ThreadLocal<>();
+    private static final ThreadLocal<String> lastEnteredEmail = new ThreadLocal<>();
+    private static final ThreadLocal<String> lastEnteredPassword = new ThreadLocal<>();
 
-    public static void setEmail(String e) { email.set(e); }
-    public static void setPassword(String p) { password.set(p); }
-    public static String getEmail() { return email.get(); }
-    public static String getPassword() { return password.get(); }
-    public static void clear() { email.remove(); password.remove(); }
+    public static void setEmail(String e) { 
+        email.set(e);
+        lastEnteredEmail.set(e);
+    }
+    
+    public static void setPassword(String p) { 
+        password.set(p);
+        lastEnteredPassword.set(p);
+    }
+    
+    public static String getEmail() { 
+        return email.get(); 
+    }
+    
+    public static String getPassword() { 
+        return password.get(); 
+    }
+
+    public static String getLastEnteredEmail() {
+        return lastEnteredEmail.get();
+    }
+
+    public static String getLastEnteredPassword() {
+        return lastEnteredPassword.get();
+    }
+
+    public static void clear() { 
+        email.remove(); 
+        password.remove();
+        lastEnteredEmail.remove();
+        lastEnteredPassword.remove();
+    }
 }

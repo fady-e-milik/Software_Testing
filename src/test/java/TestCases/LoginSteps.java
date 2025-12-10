@@ -14,7 +14,6 @@ import org.group5.Pages.LoginPage;
 
 public class LoginSteps {
 
-    // Using BaseClass to retrieve the shared WebDriver instance initialized in Hooks
     private WebDriver driver;
     private LoginPage loginPage;
 
@@ -32,27 +31,25 @@ public class LoginSteps {
 
     @Given("I am on the OpenCart login page")
     public void i_am_on_the_opencart_login_page() {
-        // Navigate to the login URL (should ideally come from a config/property file)
-        driver.get(BaseClass.getBaseUrl() + "index.php?route=account/login");
+        String loginUrl = BaseClass.getBaseUrl() + "index.php?route=account/login";
+        driver.get(loginUrl);
+        
         BaseClass.waitForSiteToLoad(driver, Duration.ofSeconds(15));
-        Assert.assertTrue(loginPage.isLoginPageDisplayed(),
+        
+        boolean isDisplayed = loginPage.isLoginPageDisplayed();
+        Assert.assertTrue(isDisplayed,
                 "Verification Failure: OpenCart Login page is not displayed.");
     }
 
     // --- WHEN Steps ---
 
-    @When("I enter valid credentials with email {string} and password {string}")
-    public void i_enter_valid_credentials_with_email_and_password(String email, String password) {
-        loginPage.enterCredentials(email, password);
-    }
-
     @When("I enter the registered credentials")
     public void i_enter_the_registered_credentials() {
-        String email = TestContext.getEmail();
-        String password = TestContext.getPassword();
-        if (email == null || password == null) {
-            throw new RuntimeException("No registered credentials found in TestContext. Ensure registration step ran.");
-        }
+        loginPage.enterCredentials(TestContext.getEmail(), TestContext.getPassword());
+    }
+
+    @When("I enter valid credentials with email {string} and password {string}")
+    public void i_enter_valid_credentials_with_email_and_password(String email, String password) {
         loginPage.enterCredentials(email, password);
     }
 
@@ -70,20 +67,19 @@ public class LoginSteps {
 
     @And("I click the Forgotten Password link")
     public void i_click_the_forgotten_password_link() {
-        loginPage.clickForgotPasswdButton();
+        loginPage.clickForgotPasswordButton();
     }
-
-    // --- THEN Steps ---
 
     @Then("I should be successfully logged in")
     public void i_should_be_successfully_logged_in() {
-        Assert.assertTrue(loginPage.isLoginSuccessful(),
-                "Failure: Expected to be logged in but 'My Account' header was not found.");
+        boolean isSuccessful = loginPage.isLoginSuccessful();
+        Assert.assertTrue(isSuccessful, "Failure: Expected to be logged in but 'My Account' header was not found.");
     }
 
     @Then("I should see a login failure warning message")
     public void i_should_see_a_login_failure_warning_message() {
-        Assert.assertTrue(loginPage.isLoginErrorDisplayed(),
+        boolean hasError = loginPage.isLoginErrorDisplayed();
+        Assert.assertTrue(hasError,
                 "Failure: Expected to see a login error message but none was displayed.");
     }
 }

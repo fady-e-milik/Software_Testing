@@ -212,6 +212,71 @@ public class BaseClass {
         return waitForClickable(getDriver(), locator, DEFAULT_WAIT, DEFAULT_POLL);
     }
 
+    // --- WebElement-based wait methods (for PageFactory @FindBy elements) ---
+
+    /**
+     * Wait for a WebElement to be present and visible
+     */
+    public static WebElement waitForElement(WebElement element, Duration timeout) {
+        try {
+            WebDriverWait wait = new WebDriverWait(getDriver(), timeout);
+            wait.until(d -> {
+                try {
+                    return element.isDisplayed();
+                } catch (StaleElementReferenceException | NoSuchElementException e) {
+                    return false;
+                }
+            });
+            return element;
+        } catch (Exception e) {
+            throw new RuntimeException("Element did not become visible within " + timeout.getSeconds() + " seconds", e);
+        }
+    }
+
+    /**
+     * Wait for a WebElement to be clickable
+     */
+    public static WebElement waitForClickable(WebElement element, Duration timeout) {
+        try {
+            WebDriverWait wait = new WebDriverWait(getDriver(), timeout);
+            wait.until(d -> {
+                try {
+                    return element.isDisplayed() && element.isEnabled();
+                } catch (StaleElementReferenceException | NoSuchElementException e) {
+                    return false;
+                }
+            });
+            return element;
+        } catch (Exception e) {
+            throw new RuntimeException("Element did not become clickable within " + timeout.getSeconds() + " seconds", e);
+        }
+    }
+
+    /**
+     * Scroll element into view
+     */
+    public static void scrollToElement(WebElement element) {
+        try {
+            JavascriptExecutor js = (JavascriptExecutor) getDriver();
+            js.executeScript("arguments[0].scrollIntoView(true);", element);
+            Thread.sleep(500); // Small delay to allow scroll animation
+        } catch (Exception e) {
+            System.out.println("Scroll to element failed: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Execute JavaScript
+     */
+    public static Object executeScript(String script, Object... args) {
+        try {
+            JavascriptExecutor js = (JavascriptExecutor) getDriver();
+            return js.executeScript(script, args);
+        } catch (Exception e) {
+            throw new RuntimeException("JavaScript execution failed: " + e.getMessage(), e);
+        }
+    }
+
     public static void waitForSiteToLoad(WebDriver driver, Duration timeout) {
         WebDriverWait wait = new WebDriverWait(driver, timeout);
 

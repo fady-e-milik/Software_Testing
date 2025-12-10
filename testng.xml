@@ -1,11 +1,122 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
-<suite name="Test1" parallel="tests" thread-count="1">
-    <test name="User-Auth-testing">
+
+<!--
+    OpenCart Testing Framework - TestNG Configuration
+    This suite manages all test execution for the OpenCart Demo website
+    Features: Home, Login, Registration, MyAccount, Cart, and Checkout
+-->
+<suite name="OpenCart_Complete_Test_Suite" parallel="tests" thread-count="1" verbose="2">
+
+    <!-- ========== All Features Combined ========== -->
+    <test name="All_Features_Combined">
         <classes>
-
-            <class name="TestRunner.TestRunner"></class>
-
+            <class name="TestRunner.TestRunner" />
         </classes>
     </test>
+
+    <!-- ========== Home Feature Tests ========== -->
+    <test name="Home_Feature_Tests">
+        <groups>
+            <run>
+                <include name="Home" />
+            </run>
+        </groups>
+        <classes>
+            <class name="TestRunner.TestRunner" />
+        </classes>
+    </test>
+
+    <!-- ========== Login Feature Tests ========== -->
+    <test name="Login_Feature_Tests">
+        <groups>
+            <run>
+                <include name="Login" />
+            </run>
+        </groups>
+        <classes>
+            <class name="TestRunner.TestRunner" />
+        </classes>
+    </test>
+
+    <!-- ========== Registration Feature Tests ========== -->
+    <test name="Registration_Feature_Tests">
+        <groups>
+            <run>
+                <include name="Registration" />
+            </run>
+        </groups>
+        <classes>
+            <class name="TestRunner.TestRunner" />
+        </classes>
+    </test>
+
+    <!-- ========== My Account Feature Tests ========== -->
+    <test name="MyAccount_Feature_Tests">
+        <groups>
+            <run>
+                <include name="MyAccount" />
+            </run>
+        </groups>
+        <classes>
+            <class name="TestRunner.TestRunner" />
+        </classes>
+    </test>
+
+    <!-- ========== Shopping Cart Feature Tests ========== -->
+    <test name="Cart_Feature_Tests">
+        <groups>
+            <run>
+                <include name="Cart" />
+            </run>
+        </groups>
+        <classes>
+            <class name="TestRunner.TestRunner" />
+        </classes>
+    </test>
+
+    <!-- ========== Checkout Feature Tests ========== -->
+    <test name="Checkout_Feature_Tests">
+        <groups>
+            <run>
+                <include name="Checkout" />
+            </run>
+        </groups>
+        <classes>
+            <class name="TestRunner.TestRunner" />
+        </classes>
+    </test>
+
+    <!-- ========== Regression Test Suite ========== -->
+    <test name="Regression_Test_Suite">
+        <groups>
+            <run>
+                <include name="Home" />
+                <include name="Login" />
+                <include name="Registration" />
+                <include name="MyAccount" />
+                <include name="Cart" />
+                <include name="Checkout" />
+            </run>
+        </groups>
+        <classes>
+            <class name="TestRunner.TestRunner" />
+        </classes>
+    </test>
+
+    <!-- ========== Shopping Workflow Suite ========== -->
+    <test name="Shopping_Workflow_Suite">
+        <groups>
+            <run>
+                <include name="Home" />
+                <include name="MyAccount" />
+                <include name="Cart" />
+                <include name="Checkout" />
+            </run>
+        </groups>
+        <classes>
+            <class name="TestRunner.TestRunner" />
+        </classes>
+    </test>
+
 </suite>
