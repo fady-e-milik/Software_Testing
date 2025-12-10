@@ -1,8 +1,8 @@
 package org.group5.Pages;
 
-import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.By;
 import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.PageFactory;
 import org.group5.BaseClass;
@@ -22,7 +22,7 @@ public class MyAccountPage extends BaseClass {
 
     // --- Web Elements Declaration ---
 
-    @FindBy(xpath = "//h1[contains(text(), 'My Account')]")
+    @FindBy(css = "#content > h1")
     private WebElement myAccountHeader;
 
     @FindBy(linkText = "Edit Account")
@@ -83,94 +83,66 @@ public class MyAccountPage extends BaseClass {
      */
     public void navigateToMyAccount() {
         driver.get(BaseClass.getBaseUrl() + "index.php?route=account/account");
-        BaseClass.waitForSiteToLoad(driver, Duration.ofSeconds(15));
+        BaseClass.waitForSiteToLoad(BaseClass.getDriver(), Duration.ofSeconds(15));
     }
 
     /**
      * Click Edit Account link
      */
     public void clickEditAccount() {
-        try {
-            BaseClass.waitForClickable(editAccountLink, Duration.ofSeconds(10)).click();
-        } catch (Exception e) {
-            throw e;
-        }
+        BaseClass.waitForClickable(By.linkText("Edit Account")).click();
     }
 
     /**
      * Click Address Book link
      */
     public void clickAddressBook() {
-        try {
-            BaseClass.waitForClickable(addressBookLink, Duration.ofSeconds(10)).click();
-        } catch (Exception e) {
-            throw e;
-        }
+        BaseClass.waitForClickable(By.linkText("Address Book")).click();
     }
 
     /**
      * Click Order History link
      */
     public void clickOrderHistory() {
-        try {
-            BaseClass.waitForClickable(orderHistoryLink, Duration.ofSeconds(10)).click();
-        } catch (Exception e) {
-            throw e;
-        }
+        BaseClass.waitForClickable(By.linkText("Order History")).click();
     }
 
     /**
      * Click Wish List link
      */
     public void clickWishList() {
-        try {
-            BaseClass.waitForClickable(wishListLink, Duration.ofSeconds(10)).click();
-        } catch (Exception e) {
-            throw e;
-        }
+        BaseClass.waitForClickable(By.linkText("Wish List")).click();
     }
 
     /**
      * Click Password link
      */
     public void clickPassword() {
-        try {
-            BaseClass.waitForClickable(passwordLink, Duration.ofSeconds(10)).click();
-        } catch (Exception e) {
-            throw e;
-        }
+        BaseClass.waitForClickable(By.linkText("Password")).click();
     }
 
     /**
      * Edit account information
      */
     public void editAccountInfo(String firstName, String lastName, String email) {
-        try {
-            WebElement fnField = BaseClass.waitForElement(firstNameField, Duration.ofSeconds(10));
-            fnField.clear();
-            fnField.sendKeys(firstName);
+        WebElement fnField = BaseClass.waitForElement(By.xpath("//input[@id='input-firstname']"), Duration.ofSeconds(10));
+        fnField.clear();
+        fnField.sendKeys(firstName);
 
-            WebElement lnField = BaseClass.waitForElement(lastNameField, Duration.ofSeconds(10));
-            lnField.clear();
-            lnField.sendKeys(lastName);
+        WebElement lnField = BaseClass.waitForElement(By.xpath("//input[@id='input-lastname']"), Duration.ofSeconds(10));
+        lnField.clear();
+        lnField.sendKeys(lastName);
 
-            WebElement emailBox = BaseClass.waitForElement(emailField, Duration.ofSeconds(10));
-            emailBox.clear();
-            emailBox.sendKeys(email);
-        } catch (Exception e) {
-            throw e;
-        }
+        WebElement emailBox = BaseClass.waitForElement(By.xpath("//input[@id='input-email']"), Duration.ofSeconds(10));
+        emailBox.clear();
+        emailBox.sendKeys(email);
     }
 
     /**
      * Save account changes
      */
     public void saveChanges() {
-        try {
-            BaseClass.waitForClickable(continueButton, Duration.ofSeconds(10)).click();
-        } catch (Exception e) {
-            throw e;
-        }
+        BaseClass.waitForClickable(By.xpath("//button[contains(text(), 'Continue')]")).click();
     }
 
     // --- Verification Methods ---
@@ -180,7 +152,7 @@ public class MyAccountPage extends BaseClass {
      */
     public boolean isMyAccountPageDisplayed() {
         try {
-            return BaseClass.waitForElement(myAccountHeader, Duration.ofSeconds(10)).isDisplayed();
+            return BaseClass.waitForElement(By.cssSelector("#content > h1")).isDisplayed();
         } catch (Exception e) {
             System.out.println("My Account page not displayed: " + e.getMessage());
             return false;
@@ -192,7 +164,7 @@ public class MyAccountPage extends BaseClass {
      */
     public boolean isAccountUpdatedSuccessfully() {
         try {
-            return BaseClass.waitForElement(successMessage, Duration.ofSeconds(5)).isDisplayed();
+            return BaseClass.waitForElement(By.cssSelector("div.alert-success")).isDisplayed();
         } catch (Exception e) {
             return false;
         }
@@ -203,7 +175,7 @@ public class MyAccountPage extends BaseClass {
      */
     public String getSuccessMessage() {
         try {
-            return BaseClass.waitForElement(successMessage, Duration.ofSeconds(5)).getText();
+            return BaseClass.waitForElement(By.cssSelector("div.alert-success")).getText();
         } catch (Exception e) {
             return "Message not found";
         }
@@ -214,7 +186,7 @@ public class MyAccountPage extends BaseClass {
      */
     public boolean isEditAccountLinkVisible() {
         try {
-            return BaseClass.waitForElement(editAccountLink, Duration.ofSeconds(5)).isDisplayed();
+            return BaseClass.waitForElement(By.linkText("Edit Account")).isDisplayed();
         } catch (Exception e) {
             return false;
         }
@@ -225,7 +197,7 @@ public class MyAccountPage extends BaseClass {
      */
     public boolean isOrderHistoryLinkVisible() {
         try {
-            return BaseClass.waitForElement(orderHistoryLink, Duration.ofSeconds(5)).isDisplayed();
+            return BaseClass.waitForElement(By.linkText("Order History")).isDisplayed();
         } catch (Exception e) {
             return false;
         }
@@ -236,7 +208,7 @@ public class MyAccountPage extends BaseClass {
      */
     public boolean isAddressBookLinkVisible() {
         try {
-            return BaseClass.waitForElement(addressBookLink, Duration.ofSeconds(5)).isDisplayed();
+            return BaseClass.waitForElement(By.linkText("Address Book")).isDisplayed();
         } catch (Exception e) {
             return false;
         }

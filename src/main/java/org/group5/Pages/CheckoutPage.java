@@ -227,34 +227,22 @@ public class CheckoutPage extends BaseClass {
      * Select shipping method
      */
     public void selectShippingMethod() {
-        try {
-            BaseClass.waitForClickable(shippingMethodRadio, Duration.ofSeconds(10)).click();
-        } catch (Exception e) {
-            throw e;
-        }
+        BaseClass.waitForClickable(shippingMethodRadio, Duration.ofSeconds(10)).click();
     }
 
     /**
      * Select payment method
      */
     public void selectPaymentMethod() {
-        try {
-            BaseClass.waitForClickable(paymentMethodRadio, Duration.ofSeconds(10)).click();
-        } catch (Exception e) {
-            throw e;
-        }
+        BaseClass.waitForClickable(paymentMethodRadio, Duration.ofSeconds(10)).click();
     }
 
     /**
      * Add order comments
      */
     public void addOrderComments(String comments) {
-        try {
-            WebElement commentsField = BaseClass.waitForElement(orderComments, Duration.ofSeconds(10));
-            commentsField.sendKeys(comments);
-        } catch (Exception e) {
-            throw e;
-        }
+        WebElement commentsField = BaseClass.waitForElement(orderComments, Duration.ofSeconds(10));
+        commentsField.sendKeys(comments);
     }
 
     /**

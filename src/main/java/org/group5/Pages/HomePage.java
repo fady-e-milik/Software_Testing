@@ -4,9 +4,7 @@ import org.group5.BaseClass;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.PageFactory;
-import org.openqa.selenium.NoSuchElementException;
 import java.time.Duration;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.interactions.Actions;
@@ -23,44 +21,7 @@ public class HomePage extends BaseClass {
 
     // --- Web Elements Declaration (Using robust selectors for localhost OpenCart) ---
 
-    // Top Navigation Links
-    @FindBy(xpath = "//span[contains(text(), 'My Account')]")
-    private WebElement myAccountMenu;
-
-    @FindBy(linkText = "Register")
-    private WebElement registerLink;
-
-    @FindBy(linkText = "Login")
-    private WebElement loginLink;
-
-    // Search Bar
-    @FindBy(name = "search")
-    private WebElement searchInput;
-
-    @FindBy(css = "button.btn-default[aria-label='Search']")
-    private WebElement searchButton;
-
-    @FindBy(css = "button.btn:nth-of-type(1)")
-    private WebElement searchButtonAlt;
-
-    // Main content area for page verification
-    @FindBy(id = "content")
-    private WebElement mainContent;
-
-    // Featured Products section
-    @FindBy(xpath = "//*[@id=\"content\"]/div[2]/div[1]/div/div[2]/div/h4/a")
-    private WebElement firstFeaturedProductLink;
-
-    // Generic first product link (works on search results and listings)
-    @FindBy(xpath = "//div[contains(@class,'product-layout')]//h4/a")
-    private WebElement firstProductLink;
-
-    // Page title verification
-    @FindBy(xpath = "//h1[contains(text(), 'Your Store')]")
-    private WebElement pageTitle;
-
-    @FindBy(xpath = "//*[@id=\"button-cart\"]")
-    private WebElement addToCartButton;
+    // Note: We prefer By-based waits in page methods; PageFactory fields removed to avoid unused-field warnings
 
 
     // --- Action Methods ---
@@ -94,7 +55,7 @@ public class HomePage extends BaseClass {
             // Fallback to the PageFactory field
             if (btn == null) {
                 try {
-                    btn = BaseClass.waitForElement(addToCartButton, Duration.ofSeconds(5));
+                    btn = BaseClass.waitForElement(By.id("button-cart"), Duration.ofSeconds(5));
                 } catch (Exception ignored) {}
             }
 
@@ -144,7 +105,7 @@ public class HomePage extends BaseClass {
             // Attempt click strategies in order
             // 1) Wait for clickable (longer) and click
             try {
-                BaseClass.waitForClickable(btn, Duration.ofSeconds(15)).click();
+                BaseClass.waitForClickable(By.id("button-cart"), Duration.ofSeconds(15)).click();
                 return;
             } catch (Exception e) { /* fallthrough */ }
 
@@ -180,8 +141,8 @@ public class HomePage extends BaseClass {
 
     public void navigateToRegistrationPage() {
         try {
-            BaseClass.waitForClickable(myAccountMenu, Duration.ofSeconds(10)).click();
-            BaseClass.waitForClickable(registerLink, Duration.ofSeconds(10)).click();
+            BaseClass.waitForClickable(By.xpath("//span[contains(text(), 'My Account')]")).click();
+            BaseClass.waitForClickable(By.linkText("Register")).click();
         } catch (Exception e) {
             throw new RuntimeException("Failed to navigate to Registration page: " + e.getMessage(), e);
         }
@@ -189,8 +150,8 @@ public class HomePage extends BaseClass {
 
     public void navigateToLoginPage() {
         try {
-            BaseClass.waitForClickable(myAccountMenu, Duration.ofSeconds(10)).click();
-            BaseClass.waitForClickable(loginLink, Duration.ofSeconds(10)).click();
+            BaseClass.waitForClickable(By.xpath("//span[contains(text(), 'My Account')]")).click();
+            BaseClass.waitForClickable(By.linkText("Login")).click();
         } catch (Exception e) {
             throw new RuntimeException("Failed to navigate to Login page: " + e.getMessage(), e);
         }
@@ -198,7 +159,7 @@ public class HomePage extends BaseClass {
 
     public void searchForProduct(String productName) {
         try {
-            WebElement searchBox = BaseClass.waitForElement(searchInput, Duration.ofSeconds(10));
+            WebElement searchBox = BaseClass.waitForElement(By.name("search"), Duration.ofSeconds(10));
             searchBox.clear();
             searchBox.sendKeys(productName);
 
@@ -220,7 +181,7 @@ public class HomePage extends BaseClass {
 
             // 1) Primary clickable attempt (longer wait)
             try {
-                BaseClass.waitForClickable(searchButton, Duration.ofSeconds(10)).click();
+                BaseClass.waitForClickable(By.cssSelector("button.btn-default[aria-label='Search']"), Duration.ofSeconds(10)).click();
                 return;
             } catch (Exception e) {
                 // fallthrough to alternate attempts
@@ -228,15 +189,16 @@ public class HomePage extends BaseClass {
 
             // 2) Alternate button clickable
             try {
-                BaseClass.waitForClickable(searchButtonAlt, Duration.ofSeconds(5)).click();
+                BaseClass.waitForClickable(By.cssSelector("button.btn:nth-of-type(1)"), Duration.ofSeconds(5)).click();
                 return;
             } catch (Exception e) {
                 // fallthrough
             }
 
-            // 3) JS click on primary button
+            // 3) JS click on primary button (resolve via By to avoid PageFactory reliance)
             try {
-                ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView({block:'center'}); arguments[0].click();", searchButton);
+                WebElement btn = BaseClass.waitForElement(By.cssSelector("button.btn-default[aria-label='Search']"), Duration.ofSeconds(5));
+                ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView({block:'center'}); arguments[0].click();", btn);
                 return;
             } catch (Exception e) {
                 // fallthrough
@@ -244,7 +206,8 @@ public class HomePage extends BaseClass {
 
             // 4) JS click on alternate button
             try {
-                ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView({block:'center'}); arguments[0].click();", searchButtonAlt);
+                WebElement btnAlt = BaseClass.waitForElement(By.cssSelector("button.btn:nth-of-type(1)"), Duration.ofSeconds(3));
+                ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView({block:'center'}); arguments[0].click();", btnAlt);
                 return;
             } catch (Exception e) {
                 // fallthrough
@@ -252,9 +215,16 @@ public class HomePage extends BaseClass {
 
             // 5) Actions move + click
             try {
-                Actions actions = new Actions(driver);
-                actions.moveToElement(searchButton).pause(Duration.ofMillis(150)).click().perform();
-                return;
+                WebElement btnForActions = null;
+                try { btnForActions = BaseClass.waitForElement(By.cssSelector("button.btn-default[aria-label='Search']"), Duration.ofSeconds(5)); } catch (Exception ignored) {}
+                if (btnForActions == null) {
+                    try { btnForActions = BaseClass.waitForElement(By.cssSelector("button.btn:nth-of-type(1)"), Duration.ofSeconds(3)); } catch (Exception ignored) {}
+                }
+                if (btnForActions != null) {
+                    Actions actions = new Actions(driver);
+                    actions.moveToElement(btnForActions).pause(Duration.ofMillis(150)).click().perform();
+                    return;
+                }
             } catch (Exception e) {
                 // fallthrough
             }
@@ -269,7 +239,7 @@ public class HomePage extends BaseClass {
 
     public boolean isProductPageDisplayed() {
         try {
-            return BaseClass.waitForElement(addToCartButton, Duration.ofSeconds(10)).isDisplayed();
+            return BaseClass.waitForElement(By.id("button-cart"), Duration.ofSeconds(10)).isDisplayed();
         } catch (Exception e) {
             return false;
         }
@@ -277,7 +247,7 @@ public class HomePage extends BaseClass {
 
     public void clickFirstFeaturedProduct() {
         try {
-            WebElement featured = BaseClass.waitForElement(firstFeaturedProductLink, Duration.ofSeconds(10));
+            WebElement featured = BaseClass.waitForElement(By.xpath("//*[@id=\"content\"]/div[2]/div[1]/div/div[2]/div/h4/a"), Duration.ofSeconds(10));
 
             // If the featured product link has an href, navigate directly to it to avoid click interception
             try {
@@ -334,7 +304,7 @@ public class HomePage extends BaseClass {
 
                 // Try normal clickable click
                 try {
-                    BaseClass.waitForClickable(featured, Duration.ofSeconds(8)).click();
+                    BaseClass.waitForClickable(By.xpath("//*[@id=\"content\"]/div[2]/div[1]/div/div[2]/div/h4/a"), Duration.ofSeconds(8)).click();
                     return;
                 } catch (Exception clickEx) {
                     // If last attempt, proceed to stronger fallbacks
@@ -350,6 +320,8 @@ public class HomePage extends BaseClass {
                     ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView({block:'center'}); arguments[0].click();", featured);
                     return;
                 } catch (Exception jsEx) {
+                    // ignore js fallback failure and continue to other fallbacks
+                    try { System.err.println("JS click fallback failed: " + jsEx.getMessage()); } catch (Exception ignore) {}
                 }
 
                 // If there's an href, navigate via WebDriver.get as a strong fallback
@@ -384,7 +356,7 @@ public class HomePage extends BaseClass {
 
     public boolean isOnHomePage() {
         try {
-            return BaseClass.waitForElement(pageTitle, Duration.ofSeconds(10)).isDisplayed();
+            return BaseClass.waitForElement(By.xpath("//h1[contains(text(), 'Your Store')]")).isDisplayed();
         } catch (Exception e) {
             return false;
         }
@@ -392,7 +364,7 @@ public class HomePage extends BaseClass {
 
     public boolean isHomePageDisplayed() {
         try {
-            return BaseClass.waitForElement(mainContent, Duration.ofSeconds(10)).isDisplayed();
+            return BaseClass.waitForElement(By.id("content")).isDisplayed();
         } catch (Exception e) {
             return false;
         }
